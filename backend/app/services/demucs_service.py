@@ -3,7 +3,7 @@ import os
 
 OUTPUT_DIR = 'app/outputs'
 
-def seperate_audio(file_path):
+def separate_audio(file_path):
     command =['demucs','--two-stems=vocals',file_path] 
     subprocess.run(command,check=True)
     filename=os.path.splitext(os.path.basename(file_path))[0]

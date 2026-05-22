@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
 import os
-
+from app.services.ffmpeg_service import convert_to_wav   # Add 'app.' prefix
+from app.services.demucs_service import separate_audio   # Add 'app.' prefix
+from app.services.whisper_service import transcribe_audio
 router = APIRouter()
 
 # 1. Get the directory where this current file lives (backend/app/routes/)
@@ -23,8 +25,14 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         content = await file.read()
         f.write(content)
+    wav_path=convert_to_wav(file_path)
+    seperated=separate_audio(wav_path)
+    transcription=transcribe_audio(seperated['vocals'])
 
     return {
-        "filename": file.filename,
-        "message": "Upload successful"
+        "message": "Processing successful",
+        "lyrics":transcription['lyrics'],
+        "segments":transcription['segments'],
+        "instrumental":seperated['instrumental'],
+        "vocals":seperated['vocals']
     }
