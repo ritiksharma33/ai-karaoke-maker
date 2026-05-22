@@ -5,21 +5,41 @@ import { useState } from "react";
 import api from "@/lib/api";
 
 import KaraokePlayer from "./KaraokePlayer";
+import VocalPlayer from "./VocalPlayer";
 import LyricsViewer from "./LyricsViewer";
+import YouTubeInput from "./YouTubeInput";
 
 export default function UploadBox() {
 
   const [file, setFile] =
     useState<File | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
-
   const [lyrics, setLyrics] =
     useState("");
 
   const [instrumental, setInstrumental] =
     useState("");
+
+  const [vocals, setVocals] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const processResult = (data: any) => {
+
+    setLyrics(data.lyrics);
+
+    setInstrumental(
+      "http://127.0.0.1:8000/" +
+      data.instrumental
+    );
+
+    setVocals(
+      "http://127.0.0.1:8000/" +
+      data.vocals
+    );
+  };
 
   const handleUpload = async () => {
 
@@ -38,13 +58,7 @@ export default function UploadBox() {
         formData
       );
 
-      setLyrics(res.data.lyrics);
-
-      const audioUrl =
-        "http://127.0.0.1:8000/" +
-        res.data.instrumental;
-
-      setInstrumental(audioUrl);
+      processResult(res.data);
 
     } catch (err) {
 
@@ -58,38 +72,76 @@ export default function UploadBox() {
 
   return (
 
-    <div className="max-w-2xl mx-auto p-10">
+    <div className="max-w-3xl mx-auto p-10">
 
-      <h1 className="text-3xl font-bold">
+      <h1 className="text-4xl font-bold">
         AI Karaoke Maker
       </h1>
 
-      <input
-        type="file"
-        className="mt-6"
-        onChange={(e) => {
-          if (e.target.files) {
-            setFile(e.target.files[0]);
-          }
-        }}
+      {/* File Upload */}
+
+      <div className="mt-8">
+
+        <input
+          type="file"
+          onChange={(e) => {
+
+            if (e.target.files) {
+
+              setFile(
+                e.target.files[0]
+              );
+            }
+          }}
+        />
+
+        <button
+          onClick={handleUpload}
+          className="bg-black text-white px-6 py-2 mt-4 rounded"
+        >
+          {loading
+            ? "Processing..."
+            : "Upload Audio"}
+        </button>
+
+      </div>
+
+      {/* YouTube */}
+
+      <YouTubeInput
+        onProcessed={processResult}
       />
 
-      <button
-        onClick={handleUpload}
-        className="bg-black text-white px-6 py-2 mt-4 rounded"
-      >
-        {loading
-          ? "Processing..."
-          : "Generate Karaoke"}
-      </button>
+      {/* Instrumental */}
 
       {instrumental && (
-        <KaraokePlayer
-          audioUrl={instrumental}
+
+        <div className="mt-10">
+
+          <h2 className="text-2xl font-bold">
+            Instrumental
+          </h2>
+
+          <KaraokePlayer
+            audioUrl={instrumental}
+          />
+
+        </div>
+      )}
+
+      {/* Vocals */}
+
+      {vocals && (
+
+        <VocalPlayer
+          audioUrl={vocals}
         />
       )}
 
+      {/* Lyrics */}
+
       {lyrics && (
+
         <LyricsViewer
           lyrics={lyrics}
         />

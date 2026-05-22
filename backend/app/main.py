@@ -5,7 +5,7 @@ from app.routes.upload import router as upload_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-
+from app.routes.youtube import router as youtube_router
 
 app=FastAPI()
 os.makedirs("separated", exist_ok=True)
@@ -15,6 +15,7 @@ origins=[
     "http://127.0.0.1:3000",
 
 ]
+app.include_router(youtube_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
